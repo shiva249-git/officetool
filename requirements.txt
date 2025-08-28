@@ -1,10 +1,14 @@
-Flask==2.3.4
+# Core Flask
+Flask==2.3.3
+
+# Authentication & Forms
 Flask-Login==0.6.3
 Flask-WTF==1.1.1
-Werkzeug==2.3.6
-Jinja2==3.1.2
-itsdangerous==2.1.2
-click==8.1.4
+
+# Database
 Flask-SQLAlchemy==3.0.5
 Flask-Migrate==4.0.5
 python-dotenv==1.0.0
+
+# WSGI server for production
+gunicorn==21.2.0

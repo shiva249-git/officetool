@@ -1,13 +1,37 @@
 {% extends "layout.html" %}
+
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-<h2>Welcome, {{ user_email }}</h2>
-<div class="row mt-4">
-  <div class="col-md-4">
-    <div class="card p-3 bg-primary text-white">Employees</div>
-  </div>
-  <div class="col-md-4">
-    <div class="card p-3 bg-success text-white">Attendance</div>
-  </div>
-  <div class="col-md-4">
+<div class="p-4 rounded" style="background: linear-gradient(to right, #e0f7fa, #80deea);">
+    <h2 class="mb-4">Welcome, {{ user_email }}</h2>
+    <p class="mb-4">Here is your task overview:</p>
+
+    {% if tasks %}
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Title</th>
+                    <th>Status</th>
+                    <th>Priority</th>
+                    <th>Due Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in tasks %}
+                <tr>
+                    <td>{{ task.title }}</td>
+                    <td>{{ task.status }}</td>
+                    <td>{{ task.priority }}</td>
+                    <td>{{ task.due_date or "N/A" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p>No tasks assigned yet. Start by adding new tasks!</p>
+    {% endif %}
+</div>
+{% endblock %}

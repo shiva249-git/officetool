@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}Office Management Tool{% endblock %}</title>
+
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; 
+                 script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; 
+                 style-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; 
+                 img-src 'self' data:; 
+                 font-src 'self' https://cdn.jsdelivr.net">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet">
+
+  <style>
+    body { min-height:100vh; background-size:cover; transition: background 1s; }
+    .navbar-custom { background-color: rgba(0,0,0,0.7); }
+    .content-wrapper { margin-top: 1rem; }
+  </style>
+
+  {% block head %}{% endblock %}
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="{{ url_for('dashboard.home') }}">Office Tool</a>
+    <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        {% if session.get('user_email') %}
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard.home') }}">Dashboard</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.logout') }}">Logout</a></li>
+        {% else %}
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.login') }}">Login</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.register') }}">Register</a></li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container content-wrapper">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{category}} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  {% block content %}{% endblock %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  const backgrounds = [
+    "{{ url_for('static', filename='images/backgrounds/bg1.jpg') }}",
+    "{{ url_for('static', filename='images/backgrounds/bg2.jpg') }}",
+    "{{ url_for('static', filename='images/backgrounds/bg3.jpg') }}"
+  ];
+  document.addEventListener("DOMContentLoaded", () => {
+    const idx = Math.floor(Math.random() * backgrounds.length);
+    document.body.style.backgroundImage = `url('${backgrounds[idx]}')`;
+  });
+</script>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>

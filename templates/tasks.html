@@ -8,6 +8,7 @@
 <div class="card p-3 mb-4 bg-dark text-white">
   <h5>Add New Task</h5>
   <form method="POST" action="{{ url_for('tasks.add_task') }}">
+    {{ form.hidden_tag() }} <!-- CSRF Token -->
     <div class="mb-2">
       <input type="text" class="form-control" name="title" placeholder="Task Title" required>
     </div>
@@ -34,9 +35,10 @@
 <!-- Task List Table -->
 <div class="card p-3 bg-dark text-white">
   <h5>Task List</h5>
+  <table class="table table-dark table-striped">
+    <thead>
       <tr>
         <th>ID</th>
-
         <th>Title</th>
         <th>Assigned To</th>
         <th>Priority</th>
@@ -44,12 +46,18 @@
         <th>Due Date</th>
         <th>Actions</th>
       </tr>
+    </thead>
     <tbody>
       {% for task in tasks %}
+      <tr>
         <td>{{ task.id }}</td>
         <td>{{ task.title }}</td>
         <td>{{ task.assigned_to }}</td>
+
+        <!-- Update Status Form -->
         <td>
+          <form method="POST" action="{{ url_for('tasks.update_task', task_id=task.id) }}">
+            {{ form.hidden_tag() }} <!-- CSRF Token -->
             <select class="form-select" name="status" onchange="this.form.submit()">
               <option value="Pending" {% if task.status=='Pending' %}selected{% endif %}>Pending</option>
               <option value="In Progress" {% if task.status=='In Progress' %}selected{% endif %}>In Progress</option>
@@ -57,6 +65,8 @@
             </select>
           </form>
         </td>
+
+        <td>{{ task.priority }}</td>
         <td>{{ task.due_date or "-" }}</td>
         <td>
           <a href="{{ url_for('tasks.delete_task', task_id=task.id) }}" class="btn btn-danger btn-sm">Delete</a>
@@ -67,8 +77,3 @@
   </table>
 </div>
 {% endblock %}
-          <form method="POST" action="{{ url_for('tasks.update_task', task_id=task.id) }}">
-        <td>{{ task.priority }}</td>
-      <tr>
-    </thead>
-

@@ -20,7 +20,7 @@
                 <ul class="navbar-nav ms-auto">
                     {% if session.get('user_email') %}
                     <li class="nav-item">
-                        <a class="nav-link" href="#">{{ session['user_email'] }}</a>
+                        <a class="nav-link disabled">{{ session['user_email'] }}</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('auth.logout') }}">Logout</a>
@@ -47,6 +47,11 @@
     <footer class="bg-dark text-white text-center py-3 mt-4">
         &copy; 2025 Office Task Manager
     </footer>
+
+    <!-- Optional CSRF macro for forms -->
+    {% macro csrf_field(form) %}
+        {{ form.hidden_tag() }}
+    {% endmacro %}
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

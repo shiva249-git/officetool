@@ -25,32 +25,37 @@
       {% endif %}
     {% endwith %}
 
-    <!-- Kanban Columns -->
-    <div class="row g-3">
-        {% set columns = ['Pending', 'In Progress', 'Completed'] %}
-        {% for status in columns %}
-        <div class="col-md-4">
-            <div class="p-3 rounded" style="background: #f0f8ff;">
-                <h4 class="text-center">{{ status }}</h4>
-                <hr>
-                {% for task in tasks if task.status == status %}
-                <div class="card mb-3 shadow-sm">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ task.title }}</h5>
-                        <p class="card-text"><strong>Priority:</strong> {{ task.priority }}</p>
-                        <p class="card-text"><strong>Due:</strong> {{ task.due_date or "N/A" }}</p>
-                        <div class="d-flex justify-content-between">
-                            <a href="{{ url_for('tasks.edit_task', task_id=task.id) }}" class="btn btn-sm btn-warning">Edit</a>
-                            <a href="{{ url_for('tasks.delete_task', task_id=task.id) }}" class="btn btn-sm btn-danger">Delete</a>
-                        </div>
-                    </div>
-                </div>
-                {% else %}
-                <p class="text-muted text-center">No tasks</p>
+    <!-- Task Table -->
+    <div class="card p-3 bg-dark text-white mb-4">
+        <h4>Task List</h4>
+        <table class="table table-dark table-striped mt-3">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Assigned To</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Due Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in tasks %}
+                <tr>
+                    <td>{{ task.id }}</td>
+                    <td>{{ task.title }}</td>
+                    <td>{{ task.assigned_to or "-" }}</td>
+                    <td>{{ task.priority }}</td>
+                    <td>{{ task.status }}</td>
+                    <td>{{ task.due_date or "-" }}</td>
+                    <td>
+                        <a href="{{ url_for('tasks.delete_task', task_id=task.id) }}" class="btn btn-danger btn-sm">Delete</a>
+                    </td>
+                </tr>
                 {% endfor %}
-            </div>
-        </div>
-        {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
 
@@ -58,32 +63,36 @@
 <div class="modal fade" id="createTaskModal" tabindex="-1" aria-labelledby="createTaskModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
-      <form method="POST" action="{{ url_for('tasks.create_task') }}">
-        {{ csrf_token() }}
+      <form method="POST" action="{{ url_for('dashboard.create_task') }}">
+        {{ form.hidden_tag() }}
         <div class="modal-header">
           <h5 class="modal-title" id="createTaskModalLabel">Create New Task</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
             <div class="mb-3">
-                <label for="title" class="form-label">Task Title</label>
-                <input type="text" class="form-control" id="title" name="title" required>
+                {{ form.title.label(class="form-label") }}
+                {{ form.title(class="form-control") }}
             </div>
             <div class="mb-3">
-                <label for="priority" class="form-label">Priority</label>
-                <select class="form-select" id="priority" name="priority">
-                    <option value="Low">Low</option>
-                    <option value="Medium" selected>Medium</option>
-                    <option value="High">High</option>
-                </select>
+                {{ form.assigned_to.label(class="form-label") }}
+                {{ form.assigned_to(class="form-control") }}
             </div>
             <div class="mb-3">
-                <label for="due_date" class="form-label">Due Date</label>
-                <input type="date" class="form-control" id="due_date" name="due_date">
+                {{ form.priority.label(class="form-label") }}
+                {{ form.priority(class="form-select") }}
+            </div>
+            <div class="mb-3">
+                {{ form.status.label(class="form-label") }}
+                {{ form.status(class="form-select") }}
+            </div>
+            <div class="mb-3">
+                {{ form.due_date.label(class="form-label") }}
+                {{ form.due_date(class="form-control") }}
             </div>
         </div>
         <div class="modal-footer">
-          <button type="submit" class="btn btn-success">Create Task</button>
+          {{ form.submit(class="btn btn-success") }}
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
         </div>
       </form>

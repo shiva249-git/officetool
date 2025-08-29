@@ -1,5 +1,4 @@
 {% extends "layout.html" %}
-
 {% block title %}Edit Task{% endblock %}
 
 {% block content %}
@@ -8,38 +7,26 @@
         <h2 class="mb-4 text-center">Edit Task</h2>
 
         <form method="POST" action="{{ url_for('tasks.edit_task', task_id=task.id) }}">
-            {{ csrf_token() }}
+            {{ form.hidden_tag() }}  <!-- CSRF token -->
             <div class="mb-3">
-                <label for="title" class="form-label">Task Title</label>
-                <input type="text" class="form-control" id="title" name="title" value="{{ task.title }}" required>
+                {{ form.title.label(class="form-label") }}
+                {{ form.title(class="form-control") }}
             </div>
-
             <div class="mb-3">
-                <label for="priority" class="form-label">Priority</label>
-                <select class="form-select" id="priority" name="priority">
-                    <option value="Low" {% if task.priority == 'Low' %}selected{% endif %}>Low</option>
-                    <option value="Medium" {% if task.priority == 'Medium' %}selected{% endif %}>Medium</option>
-                    <option value="High" {% if task.priority == 'High' %}selected{% endif %}>High</option>
-                </select>
+                {{ form.priority.label(class="form-label") }}
+                {{ form.priority(class="form-select") }}
             </div>
-
             <div class="mb-3">
-                <label for="status" class="form-label">Status</label>
-                <select class="form-select" id="status" name="status">
-                    <option value="Pending" {% if task.status == 'Pending' %}selected{% endif %}>Pending</option>
-                    <option value="In Progress" {% if task.status == 'In Progress' %}selected{% endif %}>In Progress</option>
-                    <option value="Completed" {% if task.status == 'Completed' %}selected{% endif %}>Completed</option>
-                </select>
+                {{ form.status.label(class="form-label") }}
+                {{ form.status(class="form-select") }}
             </div>
-
             <div class="mb-3">
-                <label for="due_date" class="form-label">Due Date</label>
-                <input type="date" class="form-control" id="due_date" name="due_date" value="{{ task.due_date|date('YYYY-MM-DD') }}">
+                {{ form.due_date.label(class="form-label") }}
+                {{ form.due_date(class="form-control") }}
             </div>
-
             <div class="d-grid">
-                <button type="submit" class="btn btn-success btn-lg">Update Task</button>
-                <a href="{{ url_for('tasks.dashboard') }}" class="btn btn-secondary btn-lg mt-2">Cancel</a>
+                {{ form.submit(class="btn btn-success btn-lg") }}
+                <a href="{{ url_for('dashboard.home') }}" class="btn btn-secondary btn-lg mt-2">Cancel</a>
             </div>
         </form>
     </div>

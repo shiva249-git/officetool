@@ -4,6 +4,8 @@ from extensions import db, login_manager, csrf, migrate
 from models import User, Task
 from datetime import datetime
 from forms.user_forms import LogoutForm
+from flask_migrate import upgrade
+
 
 
 # Blueprints
@@ -21,6 +23,15 @@ db.init_app(app)
 migrate.init_app(app, db)
 login_manager.init_app(app)
 csrf.init_app(app)
+
+with app.app_context():
+    try:
+        upgrade()  # apply migrations automatically
+    except Exception as e:
+        print("Migration failed:", e)
+
+
+
 
 # Flask-Login settings
 login_manager.login_view = "auth.login"

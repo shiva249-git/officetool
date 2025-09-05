@@ -1,102 +1,73 @@
 {% extends "layout.html" %}
-
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="content-card">
+    <h3 class="mb-4">Dashboard Summary</h3>
 
-    <!-- Header + Add Task Button -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Welcome, {{ user_email }}</h2>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createTaskModal">
-            + Add Task
-        </button>
+    <div class="row">
+        <div class="col-md-3 mb-3">
+            <div class="card text-white bg-primary h-100">
+                <div class="card-body text-center">
+                    <h5>Total Tasks</h5>
+                    <p class="fs-4">{{ total_tasks }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-white bg-warning h-100">
+                <div class="card-body text-center">
+                    <h5>Pending</h5>
+                    <p class="fs-4">{{ pending_tasks }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-white bg-success h-100">
+                <div class="card-body text-center">
+                    <h5>Completed</h5>
+                    <p class="fs-4">{{ completed_tasks }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-white bg-danger h-100">
+                <div class="card-body text-center">
+                    <h5>Overdue</h5>
+                    <p class="fs-4">{{ overdue_tasks }}</p>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Flash Messages -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-          </div>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
-
-    <!-- Task Table -->
-    <div class="card p-3 bg-dark text-white mb-4">
-        <h4>Task List</h4>
-        <table class="table table-dark table-striped mt-3">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Title</th>
-                    <th>Assigned To</th>
-                    <th>Priority</th>
-                    <th>Status</th>
-                    <th>Due Date</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for task in tasks %}
-                <tr>
-                    <td>{{ task.id }}</td>
-                    <td>{{ task.title }}</td>
-                    <td>{{ task.assigned_to or "-" }}</td>
-                    <td>{{ task.priority }}</td>
-                    <td>{{ task.status }}</td>
-                    <td>{{ task.due_date or "-" }}</td>
-                    <td>
-                        <a href="{{ url_for('tasks.delete_task', task_id=task.id) }}" class="btn btn-danger btn-sm">Delete</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="row mt-5">
+        <div class="col-md-6 offset-md-3">
+            <canvas id="tasksPieChart" width="400" height="400"></canvas>
+        </div>
     </div>
 </div>
 
-<!-- Create Task Modal -->
-<div class="modal fade" id="createTaskModal" tabindex="-1" aria-labelledby="createTaskModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <form method="POST" action="{{ url_for('dashboard.create_task') }}">
-        {{ form.hidden_tag() }}
-        <div class="modal-header">
-          <h5 class="modal-title" id="createTaskModalLabel">Create New Task</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-            <div class="mb-3">
-                {{ form.title.label(class="form-label") }}
-                {{ form.title(class="form-control") }}
-            </div>
-            <div class="mb-3">
-                {{ form.assigned_to.label(class="form-label") }}
-                {{ form.assigned_to(class="form-control") }}
-            </div>
-            <div class="mb-3">
-                {{ form.priority.label(class="form-label") }}
-                {{ form.priority(class="form-select") }}
-            </div>
-            <div class="mb-3">
-                {{ form.status.label(class="form-label") }}
-                {{ form.status(class="form-select") }}
-            </div>
-            <div class="mb-3">
-                {{ form.due_date.label(class="form-label") }}
-                {{ form.due_date(class="form-control") }}
-            </div>
-        </div>
-        <div class="modal-footer">
-          {{ form.submit(class="btn btn-success") }}
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('tasksPieChart').getContext('2d');
+    const tasksPieChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: ['Pending', 'Completed', 'Overdue'],
+            datasets: [{
+                data: [{{ pending_tasks }}, {{ completed_tasks }}, {{ overdue_tasks }}],
+                backgroundColor: ['#ffc107', '#28a745', '#dc3545'],
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                }
+            }
+        }
+    });
+</script>
 {% endblock %}

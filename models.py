@@ -16,7 +16,8 @@ class User(db.Model, UserMixin):
         "Task",
         backref="creator",
         lazy=True,
-        foreign_keys="Task.user_id"
+        foreign_keys="Task.user_id",
+        overlaps="assigned_tasks,assignee,tasks_assigned_to,assigned_user"
     )
 
     # Tasks assigned to this user
@@ -24,7 +25,8 @@ class User(db.Model, UserMixin):
         "Task",
         backref="assignee",
         lazy=True,
-        foreign_keys="Task.assigned_to"
+        foreign_keys="Task.assigned_to",
+        overlaps="created_tasks,creator,tasks_assigned_to,assigned_user"
     )
 
     def set_password(self, password):
@@ -34,6 +36,7 @@ class User(db.Model, UserMixin):
     def check_password(self, password):
         """Check hashed password."""
         return check_password_hash(self.password_hash, password)
+
 
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -46,7 +49,13 @@ class Task(db.Model):
     due_date = db.Column(db.Date, nullable=True, default=None)
     deletion_requested = db.Column(db.Boolean, default=False)
 
-    assigned_user = db.relationship("User", foreign_keys=[assigned_to], backref="tasks_assigned_to")
+    # Explicit link to assigned user
+    assigned_user = db.relationship(
+        "User",
+        foreign_keys=[assigned_to],
+        backref="tasks_assigned_to",
+        overlaps="assigned_tasks,assignee,created_tasks,creator"
+    )
 
     def is_editable_by(self, user):
         return user.is_admin or self.user_id == user.id

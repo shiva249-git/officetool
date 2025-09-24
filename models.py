@@ -63,3 +63,13 @@ class Task(db.Model):
     def can_delete(self, user):
         """Check if user can delete the task immediately."""
         return user.is_admin or self.user_id == user.id
+
+
+class Billing(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    due_date = db.Column(db.Date, nullable=False)
+    status = db.Column(db.String(20), default="Pending")  # Pending / Paid
+
+    user = db.relationship('User', backref='billings')

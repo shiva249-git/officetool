@@ -6,7 +6,7 @@ from forms.user_forms import LoginForm, RegisterForm
 
 auth_bp = Blueprint("auth", __name__)
 
-# ===== Create Admin (One-time use) =====
+# ===== Create Admin (one-time) =====
 @auth_bp.route("/create-admin", methods=["GET", "POST"])
 def create_admin():
     if request.method == "POST":
@@ -24,26 +24,24 @@ def create_admin():
         db.session.add(admin)
         db.session.commit()
 
-        flash("Admin account created successfully! Please log in.", "success")
+        flash("Admin account created! Please login.", "success")
         return redirect(url_for("auth.login"))
 
     return render_template("create_admin.html")
-
 
 # ===== User Registration =====
 @auth_bp.route("/register", methods=["GET", "POST"])
 def register():
     form = RegisterForm()
     if form.validate_on_submit():
-        existing_user = User.query.filter_by(email=form.email.data).first()
-        if existing_user:
+        if User.query.filter_by(email=form.email.data).first():
             flash("User already exists!", "danger")
             return redirect(url_for("auth.register"))
 
         user = User(
             username=form.username.data,
             email=form.email.data,
-            is_admin=False  # normal users cannot register as admin
+            is_admin=False
         )
         user.set_password(form.password.data)
         db.session.add(user)
@@ -53,7 +51,7 @@ def register():
         login_user(user)
         return redirect(url_for("dashboard.home"))
 
-    return render_template("register.html", form=form)
+    return render_template("auth/register.html", form=form)
 
 
 # ===== User Login =====
@@ -61,22 +59,27 @@ def register():
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data).first()
+        identifier = form.user_identifier.data
+        # Allow login via username or email
+        user = User.query.filter(
+            (User.email == identifier) | (User.username == identifier)
+        ).first()
+
         if user and user.check_password(form.password.data):
             login_user(user)
             flash("Logged in successfully!", "success")
             next_page = request.args.get("next")
+            if user.is_admin:
+                return redirect(next_page or url_for("admin.admin_dashboard"))
             return redirect(next_page or url_for("dashboard.home"))
         else:
-            flash("Invalid email or password", "danger")
-
-    return render_template("login.html", form=form)
-
+            flash("Invalid username/email or password", "danger")
+    return render_template("auth/login.html", form=form)
 
 # ===== Logout =====
 @auth_bp.route("/logout", methods=["POST"])
 @login_required
-@csrf.exempt  # If using Flask-WTF CSRF globally, otherwise remove
+@csrf.exempt  # only if CSRF is global
 def logout():
     logout_user()
     flash("You have been logged out.", "info")

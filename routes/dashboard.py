@@ -15,8 +15,9 @@ def home():
     if current_user.is_admin:
         tasks_query = Task.query
     else:
-        tasks_query = Task.query.filter_by(assigned_to=current_user.id)
-
+        tasks_query = Task.query.filter(
+    (Task.assigned_to == current_user.id) | (Task.user_id == current_user.id)
+)
     # Filters
     status_filter = request.args.get("status")
     priority_filter = request.args.get("priority")

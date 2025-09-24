@@ -1,16 +1,15 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, TextAreaField, SelectField, DateField
-from wtforms.validators import DataRequired, Email, EqualTo, Length
+from wtforms import StringField, PasswordField, SubmitField, TextAreaField, SelectField, DateField, BooleanField
+from wtforms.validators import DataRequired, Email, EqualTo, Length, Optional
 
 class LoginForm(FlaskForm):
-    email = StringField("Email", validators=[DataRequired(), Email()])
+    user_identifier = StringField("Username or Email", validators=[DataRequired()])
     password = PasswordField(
         "Password",
         validators=[DataRequired()],
         render_kw={"autocomplete": "current-password"}
     )
     submit = SubmitField("Login")
-
 
 class RegisterForm(FlaskForm):
     username = StringField("Username", validators=[DataRequired(), Length(min=3, max=64)])
@@ -48,6 +47,16 @@ class TaskForm(FlaskForm):
         render_kw={"placeholder": "YYYY-MM-DD"}
     )
     submit = SubmitField("Submit")
+
+
+
+class UserEditForm(FlaskForm):
+    username = StringField("Username", validators=[DataRequired()])
+    email = StringField("Email", validators=[DataRequired(), Email()])
+    is_admin = BooleanField("Admin")
+    password = PasswordField("New Password (leave blank to keep)", validators=[Optional()])
+    submit = SubmitField("Update User")
+
 
 class LogoutForm(FlaskForm):
     submit = SubmitField("Logout")

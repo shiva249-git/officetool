@@ -1,0 +1,80 @@
+{% extends "layout.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Admin Dashboard</h2>
+
+    <!-- Summary Cards -->
+    <div class="row mt-3">
+        <div class="col-md-3 mb-3">
+            <div class="card text-white bg-primary h-100 text-center">
+                <div class="card-body">
+                    <h5>Total Users</h5>
+                    <p class="fs-4">{{ total_users }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-white bg-warning h-100 text-center">
+                <div class="card-body">
+                    <h5>Pending Tasks</h5>
+                    <p class="fs-4">{{ pending_tasks }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-white bg-success h-100 text-center">
+                <div class="card-body">
+                    <h5>Completed Tasks</h5>
+                    <p class="fs-4">{{ completed_tasks }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-white bg-danger h-100 text-center">
+                <div class="card-body">
+                    <h5>Overdue Tasks</h5>
+                    <p class="fs-4">{{ overdue_tasks }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="mt-4 mb-4">
+        <a href="{{ url_for('tasks.tasks_page') }}" class="btn btn-primary">Create New Task</a>
+        <a href="{{ url_for('tasks.tasks_page') }}" class="btn btn-secondary">Manage Tasks</a>
+        <a href="{{ url_for('admin.panel') }}" class="btn btn-info">View Users</a>
+    </div>
+
+    <!-- Pie Chart for Tasks -->
+    <div class="row mt-4">
+        <div class="col-md-6 offset-md-3">
+            <canvas id="tasksPieChart" width="400" height="400"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const ctx = document.getElementById('tasksPieChart').getContext('2d');
+const tasksPieChart = new Chart(ctx, {
+    type: 'pie',
+    data: {
+        labels: ['Pending', 'Completed', 'Overdue'],
+        datasets: [{
+            data: [{{ pending_tasks }}, {{ completed_tasks }}, {{ overdue_tasks }}],
+            backgroundColor: ['#ffc107', '#28a745', '#dc3545'],
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { position: 'bottom' }
+        }
+    }
+});
+</script>
+{% endblock %}

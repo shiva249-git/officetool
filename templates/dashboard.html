@@ -2,36 +2,43 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-<div class="content-card">
-    <h3 class="mb-4">Dashboard Summary</h3>
+<div class="container my-5">
+    <h2 class="mb-4 text-center text-white">Dashboard Summary</h2>
 
-    <div class="row">
-        <div class="col-md-3 mb-3">
-            <div class="card text-white bg-primary h-100">
+    <div class="row g-3">
+        <!-- Total Tasks -->
+        <div class="col-md-3">
+            <div class="card text-white bg-primary h-100 shadow-sm">
                 <div class="card-body text-center">
                     <h5>Total Tasks</h5>
                     <p class="fs-4">{{ total_tasks }}</p>
                 </div>
             </div>
         </div>
-        <div class="col-md-3 mb-3">
-            <div class="card text-white bg-warning h-100">
+
+        <!-- Pending Tasks -->
+        <div class="col-md-3">
+            <div class="card text-white bg-warning h-100 shadow-sm">
                 <div class="card-body text-center">
                     <h5>Pending</h5>
                     <p class="fs-4">{{ pending_tasks }}</p>
                 </div>
             </div>
         </div>
-        <div class="col-md-3 mb-3">
-            <div class="card text-white bg-success h-100">
+
+        <!-- Completed Tasks -->
+        <div class="col-md-3">
+            <div class="card text-white bg-success h-100 shadow-sm">
                 <div class="card-body text-center">
                     <h5>Completed</h5>
                     <p class="fs-4">{{ completed_tasks }}</p>
                 </div>
             </div>
         </div>
-        <div class="col-md-3 mb-3">
-            <div class="card text-white bg-danger h-100">
+
+        <!-- Overdue Tasks -->
+        <div class="col-md-3">
+            <div class="card text-white bg-danger h-100 shadow-sm">
                 <div class="card-body text-center">
                     <h5>Overdue</h5>
                     <p class="fs-4">{{ overdue_tasks }}</p>
@@ -40,6 +47,7 @@
         </div>
     </div>
 
+    <!-- Pie Chart -->
     <div class="row mt-5">
         <div class="col-md-6 offset-md-3">
             <canvas id="tasksPieChart" width="400" height="400"></canvas>
@@ -58,6 +66,7 @@
             datasets: [{
                 data: [{{ pending_tasks }}, {{ completed_tasks }}, {{ overdue_tasks }}],
                 backgroundColor: ['#ffc107', '#28a745', '#dc3545'],
+                borderWidth: 1
             }]
         },
         options: {
@@ -65,6 +74,7 @@
             plugins: {
                 legend: {
                     position: 'bottom',
+                    labels: { color: 'white' }
                 }
             }
         }

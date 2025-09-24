@@ -5,28 +5,32 @@ from datetime import date
 
 
 class User(db.Model, UserMixin):
+    __tablename__ = "user"
+
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), nullable=False, unique=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
     is_admin = db.Column(db.Boolean, default=False)
 
-    # Tasks created by this user (author/creator)
+    # Relationships
     created_tasks = db.relationship(
         "Task",
-        backref="creator",
-        lazy=True,
+        back_populates="creator",
         foreign_keys="Task.user_id",
-        overlaps="assigned_tasks,assignee,tasks_assigned_to,assigned_user"
+        lazy=True
     )
-
-    # Tasks assigned to this user
     assigned_tasks = db.relationship(
         "Task",
-        backref="assignee",
-        lazy=True,
+        back_populates="assignee",
         foreign_keys="Task.assigned_to",
-        overlaps="created_tasks,creator,tasks_assigned_to,assigned_user"
+        lazy=True
+    )
+
+    billings = db.relationship(
+        "Billing",
+        back_populates="user",
+        lazy=True
     )
 
     def set_password(self, password):
@@ -39,6 +43,8 @@ class User(db.Model, UserMixin):
 
 
 class Task(db.Model):
+    __tablename__ = "task"
+
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text)
@@ -49,12 +55,16 @@ class Task(db.Model):
     due_date = db.Column(db.Date, nullable=True, default=None)
     deletion_requested = db.Column(db.Boolean, default=False)
 
-    # Explicit link to assigned user
-    assigned_user = db.relationship(
+    # Relationships
+    creator = db.relationship(
         "User",
-        foreign_keys=[assigned_to],
-        backref="tasks_assigned_to",
-        overlaps="assigned_tasks,assignee,created_tasks,creator"
+        back_populates="created_tasks",
+        foreign_keys=[user_id]
+    )
+    assignee = db.relationship(
+        "User",
+        back_populates="assigned_tasks",
+        foreign_keys=[assigned_to]
     )
 
     def is_editable_by(self, user):
@@ -66,10 +76,15 @@ class Task(db.Model):
 
 
 class Billing(db.Model):
+    __tablename__ = "billing"
+
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     amount = db.Column(db.Float, nullable=False)
     due_date = db.Column(db.Date, nullable=False)
     status = db.Column(db.String(20), default="Pending")  # Pending / Paid
 
-    user = db.relationship('User', backref='billings')
+    user = db.relationship(
+        "User",
+        back_populates="billings"
+    )

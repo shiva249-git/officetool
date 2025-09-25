@@ -32,7 +32,7 @@ with app.app_context():
         print("Migration failed:", e)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
-    "DATABASE_URL",
+    "postgresql://officemanager_db_user:NdvazltiRoclMQckHDzD7cJnNypqTp3x@dpg-d3a33ajuibrs73blrqt0-a/officemanager_db",
     "sqlite:///office_manager.db"  # fallback for local dev
 )
 

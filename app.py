@@ -1,3 +1,4 @@
+import os
 from flask import Flask, redirect, url_for
 from config import Config
 from extensions import db, login_manager, csrf, migrate
@@ -30,6 +31,10 @@ with app.app_context():
     except Exception as e:
         print("Migration failed:", e)
 
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
+    "DATABASE_URL",
+    "sqlite:///office_manager.db"  # fallback for local dev
+)
 
 
 

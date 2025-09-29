@@ -6,74 +6,62 @@ from models import User, Task
 from datetime import datetime
 from forms.user_forms import LogoutForm
 from flask_migrate import upgrade
-from flask_sqlalchemy import SQLAlchemy
 
-
-# Blueprints
-from routes.auth import auth_bp
+# Other blueprints
 from routes.dashboard import dashboard_bp
 from routes.tasks import tasks_bp
 from routes.admin import admin_bp
 
 # ------------------ Initialize App ------------------
-app = Flask(__name__)
-app.config.from_object(Config)
+def create_app():
+    app = Flask(__name__)
+    app.config.from_object(Config)
 
-# ------------------ Initialize Extensions ------------------
-db.init_app(app)
-migrate.init_app(app, db)
-login_manager.init_app(app)
-csrf.init_app(app)
+    # Initialize Extensions
+    db.init_app(app)
+    migrate.init_app(app, db)
+    login_manager.init_app(app)
+    csrf.init_app(app)
 
-with app.app_context():
-    try:
-        upgrade()  # apply migrations automatically
-    except Exception as e:
-        print("Migration failed:", e)
+    # Run migrations automatically
+    with app.app_context():
+        try:
+            upgrade()
+        except Exception as e:
+            print("Migration failed:", e)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
-    "postgresql://officemanager_db_user:NdvazltiRoclMQckHDzD7cJnNypqTp3x@dpg-d3a33ajuibrs73blrqt0-a/officemanager_db",
-    "sqlite:///office_manager.db"  # fallback for local dev
-)
+    # Flask-Login settings
+    login_manager.login_view = "auth.login"
+    login_manager.login_message = "Please log in to access this page."
+    login_manager.login_message_category = "warning"
 
+    # User loader
+    @login_manager.user_loader
+    def load_user(user_id):
+        return User.query.get(int(user_id))
 
+    # Context processors
+    @app.context_processor
+    def inject_forms():
+        return dict(logout_form=LogoutForm())
 
-# Flask-Login settings
-login_manager.login_view = "auth.login"
-login_manager.login_message = "Please log in to access this page."
-login_manager.login_message_category = "warning"
+    @app.context_processor
+    def inject_now():
+        return {'now': datetime.utcnow}
 
-# User loader
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))
+    # Routes
+    @app.route("/")
+    def index():
+        return redirect(url_for("dashboard.home"))
 
-# ------------------ Context Processor ------------------
-@app.context_processor
-def inject_forms():
-    return dict(logout_form=LogoutForm())
+    # Import auth blueprint here to avoid circular import
+    from routes.auth import auth_bp
 
-@app.context_processor
-def inject_now():
-    return {'now': datetime.utcnow}
+    # Register Blueprints
+    app.register_blueprint(auth_bp)
+    app.register_blueprint(dashboard_bp)
+    app.register_blueprint(tasks_bp)
+    app.register_blueprint(admin_bp)
 
-# ------------------ Routes ------------------
-# Redirect root URL to dashboard
-@app.route("/")
-def index():
-    return redirect(url_for("dashboard.home"))
-
-# ------------------ Register Blueprints ------------------
-app.register_blueprint(auth_bp)
-app.register_blueprint(dashboard_bp)  # Already has url_prefix='/dashboard' if defined in blueprint
-app.register_blueprint(tasks_bp)
-app.register_blueprint(admin_bp)
-
-# ------------------ Run Server ------------------
-if __name__ == "__main__":
-    import os
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=True)
-
-
+    return app
 

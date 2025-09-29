@@ -1,10 +1,15 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request
-from flask_login import login_user, logout_user, login_required, current_user
-from extensions import db, csrf
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import login_user
+from app import db
 from models import User
-from forms.user_forms import LoginForm, RegisterForm
+from forms.user_forms import RegisterForm, LoginForm
+from flask_login import login_required, login_user, logout_user, current_user
+from extensions import csrf
+
 
 auth_bp = Blueprint("auth", __name__)
+
 
 # ===== Create Admin (one-time) =====
 @auth_bp.route("/create-admin", methods=["GET", "POST"])
@@ -29,83 +34,61 @@ def create_admin():
 
     return render_template("create_admin.html")
 
-# ===== User Registration =====
+
+# ----------------- Registration -----------------
 @auth_bp.route("/register", methods=["GET", "POST"])
 def register():
     form = RegisterForm()
     if form.validate_on_submit():
-        print("DEBUG: form.username.data =", form.username.data)
-        print("DEBUG: form.email.data =", form.email.data)
-        print("DEBUG: form.password.data =", form.password.data)
-        print("DEBUG: form.errors =", form.errors)
-
-        # Check if user already exists
-        existing_user = User.query.filter_by(email=form.email.data).first()
-        if existing_user:
-            flash("User already exists!", "danger")
-            print("DEBUG: User already exists:", form.email.data)
-            return redirect(url_for("auth.register"))
-
-        # Create user object
-        user = User(
-            username=form.username.data,
-            email=form.email.data,
-            is_admin=False
-        )
-
-        # Set password
         try:
+            # Check if email already exists
+            if User.query.filter_by(email=form.email.data).first():
+                flash("User already exists!", "danger")
+                return redirect(url_for("auth.register"))
+
+            user = User(
+                username=form.username.data.strip(),
+                email=form.email.data.strip(),
+                is_admin=False
+            )
             user.set_password(form.password.data)
-        except Exception as e:
-            print("❌ Password hash error:", e)
-            flash("Error setting password", "danger")
-            return redirect(url_for("auth.register"))
 
-        # Add to session
-        db.session.add(user)
-        try:
+            db.session.add(user)
             db.session.commit()
-            print("✅ User committed:", user.id, user.email)
+            flash("Account created successfully!", "success")
+            login_user(user)
+            return redirect(url_for("dashboard.home"))
+
         except Exception as e:
             db.session.rollback()
-            print("❌ Commit failed:", e)
-            flash("Database error: could not create user", "danger")
-            return redirect(url_for("auth.register"))
+            print("Registration error:", e)
+            flash("An error occurred. Check console for details.", "danger")
 
-        # Log in the user
-        try:
-            login_user(user)
-            print("✅ User logged in:", user.id)
-        except Exception as e:
-            print("❌ Login failed:", e)
-            flash("Error logging in", "danger")
-            return redirect(url_for("auth.register"))
-
-        flash("Account created successfully!", "success")
-        return redirect(url_for("dashboard.home"))
+    if form.errors:
+        print("Form validation errors:", form.errors)
 
     return render_template("auth/register.html", form=form)
 
-# ===== User Login =====
+
+# ----------------- Login -----------------
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        identifier = form.user_identifier.data
-        # Allow login via username or email
+        # Use user_identifier instead of email
         user = User.query.filter(
-            (User.email == identifier) | (User.username == identifier)
+            (User.email == form.user_identifier.data) | 
+            (User.username == form.user_identifier.data)
         ).first()
 
         if user and user.check_password(form.password.data):
             login_user(user)
             flash("Logged in successfully!", "success")
             next_page = request.args.get("next")
-            if user.is_admin:
-                return redirect(next_page or url_for("admin.admin_dashboard"))
             return redirect(next_page or url_for("dashboard.home"))
         else:
             flash("Invalid username/email or password", "danger")
+
     return render_template("auth/login.html", form=form)
 
 # ===== Logout =====

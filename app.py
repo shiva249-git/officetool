@@ -6,7 +6,7 @@ from models import User, Task
 from datetime import datetime
 from forms.user_forms import LogoutForm
 from flask_migrate import upgrade
-
+from flask_sqlalchemy import SQLAlchemy
 
 
 # Blueprints

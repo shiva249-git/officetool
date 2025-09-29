@@ -34,25 +34,57 @@ def create_admin():
 def register():
     form = RegisterForm()
     if form.validate_on_submit():
-        if User.query.filter_by(email=form.email.data).first():
+        print("DEBUG: form.username.data =", form.username.data)
+        print("DEBUG: form.email.data =", form.email.data)
+        print("DEBUG: form.password.data =", form.password.data)
+        print("DEBUG: form.errors =", form.errors)
+
+        # Check if user already exists
+        existing_user = User.query.filter_by(email=form.email.data).first()
+        if existing_user:
             flash("User already exists!", "danger")
+            print("DEBUG: User already exists:", form.email.data)
             return redirect(url_for("auth.register"))
 
+        # Create user object
         user = User(
             username=form.username.data,
             email=form.email.data,
             is_admin=False
         )
-        user.set_password(form.password.data)
+
+        # Set password
+        try:
+            user.set_password(form.password.data)
+        except Exception as e:
+            print("❌ Password hash error:", e)
+            flash("Error setting password", "danger")
+            return redirect(url_for("auth.register"))
+
+        # Add to session
         db.session.add(user)
-        db.session.commit()
+        try:
+            db.session.commit()
+            print("✅ User committed:", user.id, user.email)
+        except Exception as e:
+            db.session.rollback()
+            print("❌ Commit failed:", e)
+            flash("Database error: could not create user", "danger")
+            return redirect(url_for("auth.register"))
+
+        # Log in the user
+        try:
+            login_user(user)
+            print("✅ User logged in:", user.id)
+        except Exception as e:
+            print("❌ Login failed:", e)
+            flash("Error logging in", "danger")
+            return redirect(url_for("auth.register"))
 
         flash("Account created successfully!", "success")
-        login_user(user)
         return redirect(url_for("dashboard.home"))
 
     return render_template("auth/register.html", form=form)
-
 
 # ===== User Login =====
 @auth_bp.route("/login", methods=["GET", "POST"])

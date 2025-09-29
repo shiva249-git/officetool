@@ -1,17 +1,19 @@
 import os
 from dotenv import load_dotenv
 
-# Load variables from .env
+# Load environment variables from .env
 load_dotenv()
 
 class Config:
     # Get the database URL from environment variable
-    database_url = os.environ.get("DATABASE_URL", "sqlite:///office_manager.db")
+    DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///office_manager.db")
 
-    # SQLAlchemy requires "postgresql://" instead of "postgres://"
-    if database_url.startswith("postgres://"):
-        database_url = database_url.replace("postgres://", "postgresql://", 1)
+    # Replace 'postgres://' with 'postgresql://' for SQLAlchemy compatibility
+    if DATABASE_URL.startswith("postgres://"):
+        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
-    SQLALCHEMY_DATABASE_URI = database_url
+    SQLALCHEMY_DATABASE_URI = DATABASE_URL
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    # Secret key for sessions, forms, etc.
     SECRET_KEY = os.environ.get("SECRET_KEY", "fallback_secret")
